@@ -2,7 +2,6 @@
 
 namespace Overtrue\Spectra\Tests\Expressions;
 
-use Overtrue\Spectra\Expressions\AndExpression;
 use Overtrue\Spectra\Expressions\BinaryExpression;
 use Overtrue\Spectra\Expressions\OrExpression;
 use PHPUnit\Framework\TestCase;

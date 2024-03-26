@@ -5,7 +5,7 @@ namespace Overtrue\Spectra\Expressions;
 class AndExpression implements ExpressionInterface
 {
     /**
-     * @param array<\Overtrue\Spectra\Expressions\ExpressionInterface> $expressions
+     * @param  array<\Overtrue\Spectra\Expressions\ExpressionInterface>  $expressions
      */
     public function __construct(public array $expressions)
     {

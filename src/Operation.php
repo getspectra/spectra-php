@@ -24,7 +24,7 @@ enum Operation: string
             self::LT => $leftValue < $rightValue,
             self::LTE => $leftValue <= $rightValue,
             self::IN => in_array($leftValue, $rightValue, true),
-            self::NIN => !in_array($leftValue, $rightValue, true),
+            self::NIN => ! in_array($leftValue, $rightValue, true),
             default => false,
         };
     }

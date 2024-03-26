@@ -15,14 +15,14 @@ class Utils
             return $array[$key];
         }
 
-        if (!is_string($key) || !str_contains($key, '.')) {
+        if (! is_string($key) || ! str_contains($key, '.')) {
             return $default;
         }
 
         $items = $array;
 
         foreach (explode('.', $key) as $segment) {
-            if (!is_array($items) || !array_key_exists($segment, $items)) {
+            if (! is_array($items) || ! array_key_exists($segment, $items)) {
                 return $default;
             }
 

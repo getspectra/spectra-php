@@ -2,10 +2,8 @@
 
 namespace Overtrue\Spectra\Tests\Expressions;
 
-use Overtrue\Spectra\Expressions\AndExpression;
 use Overtrue\Spectra\Expressions\BinaryExpression;
 use Overtrue\Spectra\Expressions\NotExpression;
-use Overtrue\Spectra\Expressions\OrExpression;
 use PHPUnit\Framework\TestCase;
 
 class NotExpressionTest extends TestCase

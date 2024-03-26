@@ -34,18 +34,18 @@ class AndExpressionTest extends TestCase
     public function testGetFields()
     {
         $this->assertEquals(['user.id'], (new AndExpression([
-            new BinaryExpression('user.id', '=', 1)
+            new BinaryExpression('user.id', '=', 1),
         ]))->getFields());
 
         $this->assertEquals(['user.id', 'user.name'], (new AndExpression([
             new BinaryExpression('user.id', '=', 1),
-            new BinaryExpression('user.name', '=', 'overtrue')
+            new BinaryExpression('user.name', '=', 'overtrue'),
         ]))->getFields());
 
         $this->assertEquals(['user.id', 'user.name', 'user.age'], (new AndExpression([
             new BinaryExpression('user.id', '=', 1),
             new BinaryExpression('user.name', '=', 'overtrue'),
-            new BinaryExpression('user.age', '=', 18)
+            new BinaryExpression('user.age', '=', 18),
         ]))->getFields());
 
         $this->assertEquals(['user.id', 'user.name', 'team.creator_id', 'file.user_id'], (new AndExpression([
@@ -53,8 +53,8 @@ class AndExpressionTest extends TestCase
             new BinaryExpression('user.name', '=', 'overtrue'),
             new AndExpression([
                 new BinaryExpression('team.creator_id', '=', 18),
-                new BinaryExpression('file.user_id', '=', 1)
-            ])
+                new BinaryExpression('file.user_id', '=', 1),
+            ]),
         ]))->getFields());
     }
 }
