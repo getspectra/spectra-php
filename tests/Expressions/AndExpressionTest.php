@@ -57,4 +57,17 @@ class AndExpressionTest extends TestCase
             ]),
         ]))->getFields());
     }
+
+    public function testSerialize()
+    {
+        $expression1 = new BinaryExpression('team.id', '=', 123);
+        $expression2 = new BinaryExpression('user.id', '!=', null);
+
+        // to string
+        $this->assertSame('{"and":[["team.id","=",123]]}', (string) (new AndExpression([$expression1])));
+
+        // json
+        $this->assertSame('{"and":[["team.id","=",123]]}', json_encode(new AndExpression([$expression1])));
+        $this->assertSame('{"and":[["team.id","=",123],["user.id","!=",null]]}', json_encode(new AndExpression([$expression1, $expression2])));
+    }
 }

@@ -4,17 +4,40 @@ namespace Overtrue\Spectra\Polices;
 
 use Overtrue\Spectra\Effect;
 use Overtrue\Spectra\Expressions\ExpressionInterface;
+use Overtrue\Spectra\Spectra;
 use Overtrue\Spectra\Utils;
 
-class Policy implements PolicyInterface
+class Policy implements \JsonSerializable, \Stringable, PolicyInterface
 {
     public function __construct(
         public ExpressionInterface $expression,
-        public Effect $effect = Effect::ALLOW,
+        public string|Effect $effect = Effect::ALLOW,
         public array $permissions = [],
         public string $description = '',
     ) {
-        //
+        if (is_string($this->effect)) {
+            $this->effect = Effect::from(strtolower($this->effect));
+        }
+    }
+
+    public static function parse(string|array $definition): self
+    {
+        if (is_string($definition)) {
+            $definition = json_decode($definition, true);
+
+            if ($definition === null) {
+                throw new \InvalidArgumentException('Invalid JSON definition');
+            }
+        }
+
+        if (empty($definition['apply_filter'])) {
+            throw new \InvalidArgumentException('Missing apply_filter');
+        }
+
+        $effect = Effect::from(strtolower($definition['effect']));
+        $expression = Spectra::parseExpression($definition['apply_filter']);
+
+        return new self($expression, $effect, $definition['permissions'] ?? [], $definition['description'] ?? '');
     }
 
     public function getDescription(): string
@@ -44,5 +67,21 @@ class Policy implements PolicyInterface
     public function getApplyFilter(): ExpressionInterface
     {
         return $this->expression;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'description' => $this->getDescription(),
+            'effect' => $this->getEffect()->value,
+            'permissions' => $this->getPermissions(),
+            'apply_filter' => $this->getApplyFilter(),
+            'fields' => $this->getFields(),
+        ];
+    }
+
+    public function __toString(): string
+    {
+        return json_encode($this->jsonSerialize());
     }
 }

@@ -15,7 +15,7 @@ class BinaryExpression implements ExpressionInterface
 
     public function evaluate(array $data): bool
     {
-        $operation = $this->operation instanceof Operation ? $this->operation : Operation::from($this->operation);
+        $operation = $this->operation instanceof Operation ? $this->operation : Operation::from(strtolower($this->operation));
 
         if ($this->value instanceof Ref) {
             $rightValue = $this->value->toValue($data);
@@ -37,5 +37,15 @@ class BinaryExpression implements ExpressionInterface
         }
 
         return $fields;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [$this->field, $this->operation, $this->value];
+    }
+
+    public function __toString()
+    {
+        return json_encode($this->jsonSerialize());
     }
 }

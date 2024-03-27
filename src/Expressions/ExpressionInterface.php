@@ -2,7 +2,7 @@
 
 namespace Overtrue\Spectra\Expressions;
 
-interface ExpressionInterface
+interface ExpressionInterface extends \JsonSerializable, \Stringable
 {
     public function evaluate(array $data);
 

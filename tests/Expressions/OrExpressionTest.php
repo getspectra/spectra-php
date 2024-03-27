@@ -27,4 +27,17 @@ class OrExpressionTest extends TestCase
         // true, true, false
         $this->assertTrue((new OrExpression([$true1, $true2, $false1]))->evaluate(['user.id' => 1]));
     }
+
+    public function testSerialize()
+    {
+        $expression1 = new BinaryExpression('team.id', '=', 123);
+        $expression2 = new BinaryExpression('user.id', '!=', null);
+
+        // to string
+        $this->assertSame('{"or":[["team.id","=",123]]}', (string) (new OrExpression([$expression1])));
+
+        // json
+        $this->assertSame('{"or":[["team.id","=",123]]}', json_encode(new OrExpression([$expression1])));
+        $this->assertSame('{"or":[["team.id","=",123],["user.id","!=",null]]}', json_encode(new OrExpression([$expression1, $expression2])));
+    }
 }

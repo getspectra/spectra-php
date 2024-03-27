@@ -30,4 +30,14 @@ class OrExpression implements ExpressionInterface
 
         return $fields;
     }
+
+    public function __toString()
+    {
+        return json_encode($this->jsonSerialize());
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        return ['or' => $this->expressions];
+    }
 }

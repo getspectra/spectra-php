@@ -13,6 +13,7 @@ enum Operation: string
     case LTE = '<=';
     case IN = 'in';
     case NIN = 'nin';
+    case NOT_IN = 'not_in';
 
     public function operate($leftValue, $rightValue): bool
     {
@@ -24,7 +25,7 @@ enum Operation: string
             self::LT => $leftValue < $rightValue,
             self::LTE => $leftValue <= $rightValue,
             self::IN => in_array($leftValue, $rightValue, true),
-            self::NIN => ! in_array($leftValue, $rightValue, true),
+            self::NIN, self::NOT_IN => ! in_array($leftValue, $rightValue, true),
             default => false,
         };
     }

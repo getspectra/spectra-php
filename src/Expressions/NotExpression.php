@@ -18,4 +18,14 @@ class NotExpression implements ExpressionInterface
     {
         return $this->expression->getFields();
     }
+
+    public function __toString()
+    {
+        return json_encode($this->jsonSerialize());
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        return ['not' => $this->expression];
+    }
 }

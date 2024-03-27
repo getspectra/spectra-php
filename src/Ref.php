@@ -2,7 +2,7 @@
 
 namespace Overtrue\Spectra;
 
-class Ref
+class Ref implements \JsonSerializable
 {
     public function __construct(public string $field)
     {
@@ -15,6 +15,11 @@ class Ref
 
     public function __toString()
     {
-        return json_encode(['ref' => $this->field]);
+        return json_encode($this->jsonSerialize());
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        return ['ref' => $this->field];
     }
 }
