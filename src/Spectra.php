@@ -3,11 +3,7 @@
 namespace Overtrue\Spectra;
 
 use Overtrue\Spectra\DataLoaders\DataLoaderInterface;
-use Overtrue\Spectra\Expressions\AndExpression;
-use Overtrue\Spectra\Expressions\BinaryExpression;
-use Overtrue\Spectra\Expressions\ExpressionInterface;
-use Overtrue\Spectra\Expressions\NotExpression;
-use Overtrue\Spectra\Expressions\OrExpression;
+use Overtrue\Spectra\Debug\ExpressDebugger;
 use Overtrue\Spectra\Polices\PolicyInterface;
 
 class Spectra
@@ -15,44 +11,29 @@ class Spectra
     public static function validate(array $polices, DataLoaderInterface $dataLoader, string $permissionName): bool
     {
         // Find all relevant policies
-        /** @var array<\Overtrue\Spectra\Polices\PolicyInterface> $relevantPolices */
-        $relevantPolices = [];
-        foreach ($polices as $policy) {
-            if (in_array($permissionName, $policy->getPermissions())) {
-                $relevantPolices[] = $policy;
-            }
-        }
+        $relevantPolices = self::getRelevantPolices($polices, $permissionName);
 
         // Parse all resources required from policies
-        $fieldsToLoad = [];
-        foreach ($relevantPolices as $policy) {
-            $fieldsToLoad = array_merge($fieldsToLoad, $policy->getFields());
-        }
+        $fieldsToLoad = self::getRequiredFieldsFromPolicies($relevantPolices);
 
         // Load all necessary data
         $data = $dataLoader->load($fieldsToLoad);
 
         // Bisect policies into DENY and ALLOW policies
-        $denyPolicies = [];
-        $allowPolicies = [];
-        foreach ($relevantPolices as $policy) {
-            if ($policy->getEffect() === Effect::DENY) {
-                $denyPolicies[] = $policy;
-            } else {
-                $allowPolicies[] = $policy;
-            }
-        }
+        [$denyPolicies, $allowPolicies] = self::bisectPoliciesIntoDenyAndAllowPolicies($relevantPolices);
 
         // Return false if any of the DENY policies evaluate to true
+        /** @var array<PolicyInterface> $denyPolicies */
         foreach ($denyPolicies as $denyPolicy) {
-            if (self::match($denyPolicy, $data)) {
+            if ($denyPolicy->apply($data)) {
                 return false;
             }
         }
 
         // Return true if any of the ALLOW policies evaluate to true
+        /** @var array<PolicyInterface> $allowPolicies */
         foreach ($allowPolicies as $allowPolicy) {
-            if (self::match($allowPolicy, $data)) {
+            if ($allowPolicy->apply($data)) {
                 return true;
             }
         }
@@ -60,44 +41,113 @@ class Spectra
         return false;
     }
 
-    public static function parseExpression(string|array $definition): ExpressionInterface
+    public static function debug(array $polices, DataLoaderInterface $dataLoader, string $permissionName): array
     {
-        if (is_string($definition)) {
-            $definition = json_decode($definition, true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new \InvalidArgumentException('Invalid policy definition');
+        $report = [
+            'policies' => [],
+            'permission' => $permissionName,
+        ];
+
+        foreach ($polices as $police) {
+            assert($police instanceof PolicyInterface);
+
+            $report['policies'][spl_object_id($police)] = [
+                'class' => get_class($police),
+                'description' => $police->getDescription(),
+                'effect' => $police->getEffect(),
+                'permissions' => $police->getPermissions(),
+                'fields' => $police->getFields(),
+                'applied' => false,
+                'matched' => false,
+                'expression' => null,
+            ];
+        }
+
+        // Find all relevant policies
+        $relevantPolices = self::getRelevantPolices($polices, $permissionName);
+
+        // Parse all resources required from policies
+        $report['fields'] = $fieldsToLoad = self::getRequiredFieldsFromPolicies($relevantPolices);
+
+        // Load all necessary data
+        $report['data'] = $data = $dataLoader->load($fieldsToLoad);
+
+        // Bisect policies into DENY and ALLOW policies
+        [$denyPolicies, $allowPolicies] = self::bisectPoliciesIntoDenyAndAllowPolicies($relevantPolices);
+
+        // Return false if any of the DENY policies evaluate to true
+        foreach ($denyPolicies as $denyPolicy) {
+            $report['policies'][spl_object_id($denyPolicy)]['applied'] = true;
+            $report['policies'][spl_object_id($denyPolicy)]['matched'] = $matched = $denyPolicy->apply($data);
+            $report['policies'][spl_object_id($denyPolicy)]['expression'] = ExpressDebugger::debug($denyPolicy->getApplyFilter(), $data);
+
+            if ($matched) {
+                return $report;
             }
         }
 
-        // ['field', '=', 'value']
-        if (array_is_list($definition)) {
-            if (count($definition) !== 3 || Operation::tryFrom($definition[1]) === null) {
-                throw new \InvalidArgumentException('Invalid policy definition');
+        // Return true if any of the ALLOW policies evaluate to true
+        foreach ($allowPolicies as $allowPolicy) {
+            $report['policies'][spl_object_id($allowPolicy)]['applied'] = true;
+            $report['policies'][spl_object_id($allowPolicy)]['matched'] = $matched = $allowPolicy->apply($data);
+            $report['policies'][spl_object_id($allowPolicy)]['expression'] = ExpressDebugger::debug($allowPolicy->getApplyFilter(), $data);
+
+            if ($matched) {
+                return $report;
             }
-
-            return new BinaryExpression($definition[0], $definition[1], $definition[2]);
         }
 
-        // {'and': [['field1', '=', 'value'], ['field2', '=', 'value'], ...]}
-        if (array_key_exists('and', $definition)) {
-            return new AndExpression(array_map(__METHOD__, $definition['and']));
-        }
-
-        // {'or': [['field1', '=', 'value'], ['field2', '=', 'value'], ...]}
-        if (array_key_exists('or', $definition)) {
-            return new OrExpression(array_map(__METHOD__, $definition['or']));
-        }
-
-        // {'not': ['field1', '=', 'value']}
-        if (array_key_exists('not', $definition)) {
-            return new NotExpression(self::parseExpression($definition['not']));
-        }
-
-        throw new \InvalidArgumentException('Invalid policy definition');
+        return $report;
     }
 
-    public static function match(PolicyInterface $policy, array $data)
+    /**
+     * @return array<\Overtrue\Spectra\Polices\PolicyInterface>
+     */
+    public static function getRelevantPolices(array $polices, string $permissionName): array
     {
-        return $policy->getApplyFilter()->evaluate($data);
+        $relevantPolices = [];
+
+        foreach ($polices as $policy) {
+            if ($policy instanceof PolicyInterface && in_array($permissionName, $policy->getPermissions())) {
+                $relevantPolices[] = $policy;
+            }
+        }
+
+        return $relevantPolices;
+    }
+
+    /**
+     * @param  array<PolicyInterface>  $polices
+     * @return array<string>
+     */
+    public static function getRequiredFieldsFromPolicies(array $polices): array
+    {
+        $fieldsToLoad = [];
+
+        foreach ($polices as $policy) {
+            $fieldsToLoad = array_merge($fieldsToLoad, $policy->getFields());
+        }
+
+        return $fieldsToLoad;
+    }
+
+    /**
+     * @param  array<PolicyInterface>  $polices
+     * @return array[array<PolicyInterface>, array<PolicyInterface>]
+     */
+    public static function bisectPoliciesIntoDenyAndAllowPolicies(array $polices): array
+    {
+        $denyPolicies = [];
+        $allowPolicies = [];
+
+        foreach ($polices as $policy) {
+            if ($policy->getEffect() === Effect::DENY) {
+                $denyPolicies[] = $policy;
+            } else {
+                $allowPolicies[] = $policy;
+            }
+        }
+
+        return [$denyPolicies, $allowPolicies];
     }
 }

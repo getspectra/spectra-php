@@ -17,15 +17,16 @@ class BinaryExpression implements ExpressionInterface
     {
         $operation = $this->operation instanceof Operation ? $this->operation : Operation::from(strtolower($this->operation));
 
-        if ($this->value instanceof Ref) {
-            $rightValue = $this->value->toValue($data);
-        } else {
-            $rightValue = $this->value;
-        }
+        $rightValue = $this->getRightValue($this->value, $data);
 
         $leftValue = Utils::arrayGet($data, $this->field);
 
         return $operation->operate($leftValue, $rightValue);
+    }
+
+    protected function getRightValue(mixed $value, array $data): mixed
+    {
+        return $value instanceof Ref ? $value->toValue($data) : $value;
     }
 
     public function getFields(): array

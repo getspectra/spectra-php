@@ -22,4 +22,9 @@ interface PolicyInterface
     public function getPermissions(): array;
 
     public function getEffect(): Effect;
+
+    /**
+     * Return the data matched by the policy.
+     */
+    public function apply(array $data): bool;
 }

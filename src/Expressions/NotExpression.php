@@ -2,11 +2,15 @@
 
 namespace Overtrue\Spectra\Expressions;
 
+use Overtrue\Spectra\Utils;
+
 class NotExpression implements ExpressionInterface
 {
-    public function __construct(public ExpressionInterface $expression)
+    public ExpressionInterface $expression;
+
+    public function __construct(array|ExpressionInterface $expression)
     {
-        //
+        $this->expression = Utils::normalizeExpression($expression);
     }
 
     public function evaluate(array $data): bool

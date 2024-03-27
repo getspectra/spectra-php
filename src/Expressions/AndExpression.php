@@ -2,14 +2,19 @@
 
 namespace Overtrue\Spectra\Expressions;
 
+use Overtrue\Spectra\Utils;
+
 class AndExpression implements ExpressionInterface
 {
+    /** @var array<\Overtrue\Spectra\Expressions\ExpressionInterface> */
+    public array $expressions;
+
     /**
      * @param  array<\Overtrue\Spectra\Expressions\ExpressionInterface>  $expressions
      */
-    public function __construct(public array $expressions)
+    public function __construct(array $expressions)
     {
-
+        $this->expressions = Utils::normalizeExpressions($expressions);
     }
 
     public function evaluate(array $data): bool

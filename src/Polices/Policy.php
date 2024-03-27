@@ -4,7 +4,7 @@ namespace Overtrue\Spectra\Polices;
 
 use Overtrue\Spectra\Effect;
 use Overtrue\Spectra\Expressions\ExpressionInterface;
-use Overtrue\Spectra\Spectra;
+use Overtrue\Spectra\Expressions\Factory as ExpressionFactory;
 use Overtrue\Spectra\Utils;
 
 class Policy implements \JsonSerializable, \Stringable, PolicyInterface
@@ -35,7 +35,7 @@ class Policy implements \JsonSerializable, \Stringable, PolicyInterface
         }
 
         $effect = Effect::from(strtolower($definition['effect']));
-        $expression = Spectra::parseExpression($definition['apply_filter']);
+        $expression = ExpressionFactory::parse($definition['apply_filter']);
 
         return new self($expression, $effect, $definition['permissions'] ?? [], $definition['description'] ?? '');
     }
@@ -67,6 +67,11 @@ class Policy implements \JsonSerializable, \Stringable, PolicyInterface
     public function getApplyFilter(): ExpressionInterface
     {
         return $this->expression;
+    }
+
+    public function apply(array $data): bool
+    {
+        return $this->getApplyFilter()->evaluate($data);
     }
 
     public function jsonSerialize(): array
