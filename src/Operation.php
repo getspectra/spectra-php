@@ -26,7 +26,29 @@ enum Operation: string
             self::LTE => $leftValue <= $rightValue,
             self::IN => in_array($leftValue, $rightValue, true),
             self::NIN, self::NOT_IN => ! in_array($leftValue, $rightValue, true),
-            default => false,
+        };
+    }
+
+    public function equals(Operation $operation): bool
+    {
+        return match ($this) {
+            self::NEQ, self::NEQ2 => $operation === self::NEQ || $operation === self::NEQ2,
+            self::NIN, self::NOT_IN => $operation === self::NIN || $operation === self::NOT_IN,
+            default => $this === $operation,
+        };
+    }
+
+    public function asMethodName(): string
+    {
+        return match ($this) {
+            self::EQ => 'eq',
+            self::NEQ, self::NEQ2 => 'neq',
+            self::GT => 'gt',
+            self::GTE => 'gte',
+            self::LT => 'lt',
+            self::LTE => 'lte',
+            self::IN => 'in',
+            self::NIN, self::NOT_IN => 'notIn',
         };
     }
 }

@@ -4,7 +4,7 @@ namespace Overtrue\Spectra\Expressions;
 
 use Overtrue\Spectra\Utils;
 
-class OrExpression implements ExpressionInterface
+class OrExpression extends Expression
 {
     /** @var array<\Overtrue\Spectra\Expressions\ExpressionInterface> */
     public array $expressions;

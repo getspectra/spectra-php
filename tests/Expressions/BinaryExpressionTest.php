@@ -4,6 +4,7 @@ namespace Overtrue\Spectra\Tests\Expressions;
 
 use Overtrue\Spectra\Expressions\BinaryExpression;
 use Overtrue\Spectra\Ref;
+use Overtrue\Spectra\RefField;
 use PHPUnit\Framework\TestCase;
 
 class BinaryExpressionTest extends TestCase
@@ -18,11 +19,11 @@ class BinaryExpressionTest extends TestCase
 
     public function testEvaluateWithRef()
     {
-        $expression = new BinaryExpression('user.team_id', '=', new Ref('team.id'));
+        $expression = new BinaryExpression('user.team_id', '=', new RefField('team.id'));
 
         $this->assertTrue($expression->evaluate(['user' => ['team_id' => 1], 'team' => ['id' => 1]]));
 
-        $expression = new BinaryExpression('user.team_id', '=', new Ref('team.not_exists_key'));
+        $expression = new BinaryExpression('user.team_id', '=', new RefField('team.not_exists_key'));
 
         $this->assertFalse($expression->evaluate(['user' => ['team_id' => 1], 'team' => ['id' => 1]]));
     }
@@ -41,6 +42,6 @@ class BinaryExpressionTest extends TestCase
         $this->assertSame('["user.status","nin",["unactivated","banned"]]', json_encode(new BinaryExpression('user.status', 'nin', ['unactivated', 'banned'])));
 
         // ref
-        $this->assertSame('["user.team_id","=",{"ref":"team.id"}]', json_encode(new BinaryExpression('user.team_id', '=', new Ref('team.id'))));
+        $this->assertSame('["user.team_id","=",{"ref":"team.id"}]', json_encode(new BinaryExpression('user.team_id', '=', new RefField('team.id'))));
     }
 }

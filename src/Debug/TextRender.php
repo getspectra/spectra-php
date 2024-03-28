@@ -52,7 +52,7 @@ class TextRender implements RenderInterface
                 $value = $item['expression']['value'];
 
                 if ($value instanceof Ref) {
-                    $value = sprintf('%s:%s', $value, Utils::valueToString($value->toValue($data)));
+                    $value = sprintf('%s:%s', $value, Utils::valueToString($value->evaluate($data)));
                 } else {
                     $value = Utils::valueToString($value);
                 }

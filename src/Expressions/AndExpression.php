@@ -4,7 +4,7 @@ namespace Overtrue\Spectra\Expressions;
 
 use Overtrue\Spectra\Utils;
 
-class AndExpression implements ExpressionInterface
+class AndExpression extends Expression
 {
     /** @var array<\Overtrue\Spectra\Expressions\ExpressionInterface> */
     public array $expressions;
@@ -37,11 +37,6 @@ class AndExpression implements ExpressionInterface
         }
 
         return $fields;
-    }
-
-    public function __toString()
-    {
-        return json_encode($this->jsonSerialize());
     }
 
     public function jsonSerialize(): mixed

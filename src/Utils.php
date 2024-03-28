@@ -7,9 +7,9 @@ use Overtrue\Spectra\Expressions\ExpressionInterface;
 
 class Utils
 {
-    public static function getClassBasename(string $class): string
+    public static function getBasename(string $name): string
     {
-        return basename(str_replace('\\', '/', __CLASS__));
+        return basename(str_replace('\\', '/', $name));
     }
 
     public static function isValidExpressTuple(array $definition): bool

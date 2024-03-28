@@ -5,7 +5,7 @@ namespace Overtrue\Spectra\Tests\Debug;
 use Overtrue\Spectra\Debug\ExpressDebugger;
 use Overtrue\Spectra\Expressions\BinaryExpression;
 use Overtrue\Spectra\Expressions\Factory;
-use Overtrue\Spectra\Ref;
+use Overtrue\Spectra\RefField;
 use PHPUnit\Framework\TestCase;
 
 class ExpressDebuggerTest extends TestCase
@@ -17,36 +17,32 @@ class ExpressDebuggerTest extends TestCase
         $report = ExpressDebugger::debug($expression, $data);
 
         $this->assertSame([
-            'data' => $data,
-            'expressions' => [
-                'type' => 'BINARY',
-                'result' => false,
-                'expression' => [
-                    'field' => 'user.id',
-                    'operation' => '=',
-                    'value' => 1,
-                ],
-            ]], $report);
+            'name' => 'Binary',
+            'value' => false,
+            'expression' => [
+                'operation' => '=',
+                'left' => ['name' => 'user.id', 'value' => 2],
+                'right' => ['name' => null, 'value' => 1],
+            ],
+        ], $report);
     }
 
     public function testDebugWithBinaryExpressionWithRefValue()
     {
-        $refValue = new Ref('team.creator_id');
+        $refValue = new RefField('team.creator_id');
         $expression = new BinaryExpression('user.id', '=', $refValue);
         $data = ['user.id' => 2, 'team.creator_id' => 1];
         $report = ExpressDebugger::debug($expression, $data);
 
         $this->assertSame([
-            'data' => $data,
-            'expressions' => [
-                'type' => 'BINARY',
-                'result' => false,
-                'expression' => [
-                    'field' => 'user.id',
-                    'operation' => '=',
-                    'value' => $refValue,
-                ],
-            ]], $report);
+            'name' => 'Binary',
+            'value' => false,
+            'expression' => [
+                'operation' => '=',
+                'left' => ['name' => 'user.id', 'value' => 2],
+                'right' => ['name' => 'team.creator_id', 'value' => 1],
+            ],
+        ], $report);
     }
 
     public function testDebugWithAndExpression()
@@ -60,31 +56,29 @@ class ExpressDebuggerTest extends TestCase
         $report = ExpressDebugger::debug($expression, $data);
 
         $this->assertSame([
-            'data' => $data,
+            'name' => 'And',
+            'value' => false,
             'expressions' => [
-                'type' => 'AND',
-                'result' => false,
-                'expressions' => [
-                    [
-                        'type' => 'BINARY',
-                        'result' => false,
-                        'expression' => [
-                            'field' => 'user.id',
-                            'operation' => '=',
-                            'value' => 1,
-                        ],
-                    ],
-                    [
-                        'type' => 'BINARY',
-                        'result' => true,
-                        'expression' => [
-                            'field' => 'user.name',
-                            'operation' => '=',
-                            'value' => 'overtrue',
-                        ],
+                [
+                    'name' => 'Binary',
+                    'value' => false,
+                    'expression' => [
+                        'operation' => '=',
+                        'left' => ['name' => 'user.id', 'value' => 2],
+                        'right' => ['name' => null, 'value' => 1],
                     ],
                 ],
-            ]], $report);
+                [
+                    'name' => 'Binary',
+                    'value' => true,
+                    'expression' => [
+                        'operation' => '=',
+                        'left' => ['name' => 'user.name', 'value' => 'overtrue'],
+                        'right' => ['name' => null, 'value' => 'overtrue'],
+                    ],
+                ],
+            ],
+        ], $report);
     }
 
     public function testDebugWithOrExpression()
@@ -97,31 +91,29 @@ class ExpressDebuggerTest extends TestCase
         $report = ExpressDebugger::debug($expression, $data);
 
         $this->assertSame([
-            'data' => $data,
+            'name' => 'Or',
+            'value' => true,
             'expressions' => [
-                'type' => 'OR',
-                'result' => true,
-                'expressions' => [
-                    [
-                        'type' => 'BINARY',
-                        'result' => false,
-                        'expression' => [
-                            'field' => 'user.id',
-                            'operation' => '=',
-                            'value' => 1,
-                        ],
-                    ],
-                    [
-                        'type' => 'BINARY',
-                        'result' => true,
-                        'expression' => [
-                            'field' => 'user.name',
-                            'operation' => '=',
-                            'value' => 'overtrue',
-                        ],
+                [
+                    'name' => 'Binary',
+                    'value' => false,
+                    'expression' => [
+                        'operation' => '=',
+                        'left' => ['name' => 'user.id', 'value' => 2],
+                        'right' => ['name' => null, 'value' => 1],
                     ],
                 ],
-            ]], $report);
+                [
+                    'name' => 'Binary',
+                    'value' => true,
+                    'expression' => [
+                        'operation' => '=',
+                        'left' => ['name' => 'user.name', 'value' => 'overtrue'],
+                        'right' => ['name' => null, 'value' => 'overtrue'],
+                    ],
+                ],
+            ],
+        ], $report);
     }
 
     public function testDebugWithNotExpression()
@@ -135,18 +127,15 @@ class ExpressDebuggerTest extends TestCase
         $report = ExpressDebugger::debug($expression, $data);
 
         $this->assertSame([
-            'data' => $data,
-            'expressions' => [
-                'type' => 'NOT',
-                'result' => true,
+            'name' => 'Not',
+            'value' => true,
+            'expression' => [
+                'name' => 'Binary',
+                'value' => false,
                 'expression' => [
-                    'type' => 'BINARY',
-                    'result' => false,
-                    'expression' => [
-                        'field' => 'user.id',
-                        'operation' => '=',
-                        'value' => 1,
-                    ],
+                    'operation' => '=',
+                    'left' => ['name' => 'user.id', 'value' => 2],
+                    'right' => ['name' => null, 'value' => 1],
                 ],
             ],
         ], $report);

@@ -4,7 +4,7 @@ namespace Overtrue\Spectra\Expressions;
 
 use Overtrue\Spectra\Utils;
 
-class NotExpression implements ExpressionInterface
+class NotExpression extends Expression
 {
     public ExpressionInterface $expression;
 
@@ -21,11 +21,6 @@ class NotExpression implements ExpressionInterface
     public function getFields(): array
     {
         return $this->expression->getFields();
-    }
-
-    public function __toString()
-    {
-        return json_encode($this->jsonSerialize());
     }
 
     public function jsonSerialize(): mixed

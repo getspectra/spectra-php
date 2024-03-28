@@ -2,39 +2,38 @@
 
 namespace Overtrue\Spectra\Expressions;
 
+use Overtrue\Spectra\Field;
 use Overtrue\Spectra\Operation;
-use Overtrue\Spectra\Ref;
-use Overtrue\Spectra\Utils;
+use Overtrue\Spectra\RefField;
 
-class BinaryExpression implements ExpressionInterface
+class BinaryExpression extends Expression
 {
-    public function __construct(public string $field, public string|Operation $operation, public mixed $value)
-    {
-        //
+    public Field $left;
+
+    public function __construct(
+        string|Field $left,
+        public string|Operation $operation,
+        public int|float|bool|string|array|null|RefField $right
+    ) {
+        $this->left = $left instanceof Field ? $left : new Field($left);
     }
 
     public function evaluate(array $data): bool
     {
         $operation = $this->operation instanceof Operation ? $this->operation : Operation::from(strtolower($this->operation));
 
-        $rightValue = $this->getRightValue($this->value, $data);
-
-        $leftValue = Utils::arrayGet($data, $this->field);
+        $rightValue = $this->right instanceof Field ? $this->right->evaluate($data) : $this->right;
+        $leftValue = $this->left->evaluate($data);
 
         return $operation->operate($leftValue, $rightValue);
     }
 
-    protected function getRightValue(mixed $value, array $data): mixed
-    {
-        return $value instanceof Ref ? $value->toValue($data) : $value;
-    }
-
     public function getFields(): array
     {
-        $fields = [$this->field];
+        $fields = [$this->left->name];
 
-        if ($this->value instanceof Ref) {
-            $fields[] = $this->value->field;
+        if ($this->right instanceof Field) {
+            $fields[] = $this->right->name;
         }
 
         return $fields;
@@ -42,11 +41,6 @@ class BinaryExpression implements ExpressionInterface
 
     public function jsonSerialize(): array
     {
-        return [$this->field, $this->operation, $this->value];
-    }
-
-    public function __toString()
-    {
-        return json_encode($this->jsonSerialize());
+        return [$this->left, $this->operation, $this->right];
     }
 }

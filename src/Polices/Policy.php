@@ -42,7 +42,7 @@ class Policy implements \JsonSerializable, \Stringable, PolicyInterface
 
     public function getDescription(): string
     {
-        return $this->description ?? Utils::getClassBasename(get_class($this));
+        return $this->description ?? Utils::getBasename(get_class($this));
     }
 
     public function getFields(): array

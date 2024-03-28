@@ -7,19 +7,103 @@ use Overtrue\Spectra\Expressions\BinaryExpression;
 use Overtrue\Spectra\Expressions\Factory;
 use Overtrue\Spectra\Expressions\NotExpression;
 use Overtrue\Spectra\Expressions\OrExpression;
+use Overtrue\Spectra\Operation;
 use PHPUnit\Framework\TestCase;
 
 class FactoryTest extends TestCase
 {
+    public function testMake()
+    {
+        $expression = Factory::make('user.id', '=', 1);
+
+        $this->assertInstanceOf(BinaryExpression::class, $expression);
+
+        $this->assertSame('user.id', $expression->left->name);
+        $this->assertSame('=', $expression->operation);
+        $this->assertSame(1, $expression->right);
+    }
+
+    public function testAnd()
+    {
+        $expression = Factory::and([
+            Factory::make('user.id', '=', 1),
+            Factory::make('team.id', '=', 1),
+        ]);
+
+        $this->assertInstanceOf(AndExpression::class, $expression);
+
+        $this->assertCount(2, $expression->expressions);
+
+        $this->assertInstanceOf(BinaryExpression::class, $expression->expressions[0]);
+        $this->assertInstanceOf(BinaryExpression::class, $expression->expressions[1]);
+
+        $this->assertSame('user.id', $expression->expressions[0]->left->name);
+        $this->assertSame('=', $expression->expressions[0]->operation);
+        $this->assertSame(1, $expression->expressions[0]->right);
+
+        $this->assertSame('team.id', $expression->expressions[1]->left->name);
+        $this->assertSame('=', $expression->expressions[1]->operation);
+        $this->assertSame(1, $expression->expressions[1]->right);
+    }
+
+    public function testOr()
+    {
+        $expression = Factory::or([
+            Factory::make('user.id', '=', 1),
+            Factory::make('team.id', '=', 1),
+        ]);
+
+        $this->assertInstanceOf(OrExpression::class, $expression);
+
+        $this->assertCount(2, $expression->expressions);
+
+        $this->assertInstanceOf(BinaryExpression::class, $expression->expressions[0]);
+        $this->assertInstanceOf(BinaryExpression::class, $expression->expressions[1]);
+
+        $this->assertSame('user.id', $expression->expressions[0]->left->name);
+        $this->assertSame('=', $expression->expressions[0]->operation);
+        $this->assertSame(1, $expression->expressions[0]->right);
+
+        $this->assertSame('team.id', $expression->expressions[1]->left->name);
+        $this->assertSame('=', $expression->expressions[1]->operation);
+        $this->assertSame(1, $expression->expressions[1]->right);
+    }
+
+    public function testNot()
+    {
+        $expression = Factory::not(Factory::make('user.id', '=', 1));
+
+        $this->assertInstanceOf(NotExpression::class, $expression);
+
+        $this->assertInstanceOf(BinaryExpression::class, $expression->expression);
+
+        $this->assertSame('user.id', $expression->expression->left->name);
+        $this->assertSame('=', $expression->expression->operation);
+        $this->assertSame(1, $expression->expression->right);
+    }
+
+    public function testOperations()
+    {
+        foreach (Operation::cases() as $operation) {
+            $expression = forward_static_call(Factory::class.'::'.$operation->asMethodName(), 'user.id', [1]);
+
+            $this->assertInstanceOf(BinaryExpression::class, $expression);
+
+            $this->assertSame('user.id', $expression->left->name);
+            $this->assertTrue($operation->equals($expression->operation));
+            $this->assertSame([1], $expression->right);
+        }
+    }
+
     public function testParseBinaryExpression()
     {
         $expression = Factory::parse(json_encode(['user.id', '=', 1]));
 
         $this->assertInstanceOf(BinaryExpression::class, $expression);
 
-        $this->assertSame('user.id', $expression->field);
+        $this->assertSame('user.id', $expression->left->name);
         $this->assertSame('=', $expression->operation);
-        $this->assertSame(1, $expression->value);
+        $this->assertSame(1, $expression->right);
     }
 
     public function testParseNotExpression()
@@ -30,7 +114,7 @@ class FactoryTest extends TestCase
 
         $this->assertInstanceOf(NotExpression::class, $expression);
         $this->assertInstanceOf(BinaryExpression::class, $expression->expression);
-        $this->assertSame('user.id', $expression->expression->field);
+        $this->assertSame('user.id', $expression->expression->left->name);
         $this->assertSame('=', $expression->expression->operation);
 
         // also support array
@@ -52,12 +136,12 @@ class FactoryTest extends TestCase
         $this->assertCount(2, $expression->expressions);
         $this->assertInstanceOf(BinaryExpression::class, $expression->expressions[0]);
         $this->assertInstanceOf(BinaryExpression::class, $expression->expressions[1]);
-        $this->assertSame('user.id', $expression->expressions[0]->field);
+        $this->assertSame('user.id', $expression->expressions[0]->left->name);
         $this->assertSame('=', $expression->expressions[0]->operation);
-        $this->assertSame(1, $expression->expressions[0]->value);
-        $this->assertSame('team.id', $expression->expressions[1]->field);
+        $this->assertSame(1, $expression->expressions[0]->right);
+        $this->assertSame('team.id', $expression->expressions[1]->left->name);
         $this->assertSame('=', $expression->expressions[1]->operation);
-        $this->assertSame(1, $expression->expressions[1]->value);
+        $this->assertSame(1, $expression->expressions[1]->right);
     }
 
     public function testParseOrExpression()
@@ -73,11 +157,11 @@ class FactoryTest extends TestCase
         $this->assertCount(2, $expression->expressions);
         $this->assertInstanceOf(BinaryExpression::class, $expression->expressions[0]);
         $this->assertInstanceOf(BinaryExpression::class, $expression->expressions[1]);
-        $this->assertSame('user.id', $expression->expressions[0]->field);
+        $this->assertSame('user.id', $expression->expressions[0]->left->name);
         $this->assertSame('=', $expression->expressions[0]->operation);
-        $this->assertSame(1, $expression->expressions[0]->value);
-        $this->assertSame('team.id', $expression->expressions[1]->field);
+        $this->assertSame(1, $expression->expressions[0]->right);
+        $this->assertSame('team.id', $expression->expressions[1]->left->name);
         $this->assertSame('=', $expression->expressions[1]->operation);
-        $this->assertSame(1, $expression->expressions[1]->value);
+        $this->assertSame(1, $expression->expressions[1]->right);
     }
 }

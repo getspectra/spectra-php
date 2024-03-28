@@ -2,10 +2,18 @@
 
 namespace Overtrue\Spectra\Expressions;
 
+use Overtrue\Spectra\Field;
+use Overtrue\Spectra\Operation;
+use Overtrue\Spectra\RefField;
 use Overtrue\Spectra\Utils;
 
 class Factory
 {
+    public static function make(string|Field $left, string|Operation $operation, int|float|bool|string|array|null|RefField $right): BinaryExpression
+    {
+        return new BinaryExpression($left, $operation, $right);
+    }
+
     /**
      * @param array<ExpressionInterface|array<array<string,string,mixed>> $expressions
      */
@@ -25,6 +33,51 @@ class Factory
     public static function not(array|ExpressionInterface $expression): NotExpression
     {
         return new NotExpression($expression);
+    }
+
+    public static function eq(string|ExpressionInterface $left, int|float|bool|string|array|null|RefField $right): BinaryExpression
+    {
+        return new BinaryExpression($left, Operation::EQ, $right);
+    }
+
+    public static function ne(string|ExpressionInterface $left, int|float|bool|string|array|null|RefField $right): BinaryExpression
+    {
+        return new BinaryExpression($left, Operation::NEQ, $right);
+    }
+
+    public static function neq(string|ExpressionInterface $left, int|float|bool|string|array|null|RefField $right): BinaryExpression
+    {
+        return new BinaryExpression($left, Operation::NEQ, $right);
+    }
+
+    public static function gt(string|ExpressionInterface $left, int|float|bool|string|array|null|RefField $right): BinaryExpression
+    {
+        return new BinaryExpression($left, Operation::GT, $right);
+    }
+
+    public static function gte(string|ExpressionInterface $left, int|float|bool|string|array|null|RefField $right): BinaryExpression
+    {
+        return new BinaryExpression($left, Operation::GTE, $right);
+    }
+
+    public static function lt(string|ExpressionInterface $left, int|float|bool|string|array|null|RefField $right): BinaryExpression
+    {
+        return new BinaryExpression($left, Operation::LT, $right);
+    }
+
+    public static function lte(string|ExpressionInterface $left, int|float|bool|string|array|null|RefField $right): BinaryExpression
+    {
+        return new BinaryExpression($left, Operation::LTE, $right);
+    }
+
+    public static function in(string|ExpressionInterface $left, array $right): BinaryExpression
+    {
+        return new BinaryExpression($left, Operation::IN, $right);
+    }
+
+    public static function notIn(string|ExpressionInterface $left, array $right): BinaryExpression
+    {
+        return new BinaryExpression($left, Operation::NOT_IN, $right);
     }
 
     public static function parse(array|string $definition): ExpressionInterface
