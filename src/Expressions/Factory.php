@@ -35,47 +35,47 @@ class Factory
         return new NotExpression($expression);
     }
 
-    public static function eq(string|ExpressionInterface $left, int|float|bool|string|array|null|RefField $right): BinaryExpression
+    public static function eq(string|Field $left, int|float|bool|string|array|null|RefField $right): BinaryExpression
     {
         return new BinaryExpression($left, Operation::EQ, $right);
     }
 
-    public static function ne(string|ExpressionInterface $left, int|float|bool|string|array|null|RefField $right): BinaryExpression
+    public static function ne(string|Field $left, int|float|bool|string|array|null|RefField $right): BinaryExpression
     {
         return new BinaryExpression($left, Operation::NEQ, $right);
     }
 
-    public static function neq(string|ExpressionInterface $left, int|float|bool|string|array|null|RefField $right): BinaryExpression
+    public static function neq(string|Field $left, int|float|bool|string|array|null|RefField $right): BinaryExpression
     {
         return new BinaryExpression($left, Operation::NEQ, $right);
     }
 
-    public static function gt(string|ExpressionInterface $left, int|float|bool|string|array|null|RefField $right): BinaryExpression
+    public static function gt(string|Field $left, int|float|bool|string|array|null|RefField $right): BinaryExpression
     {
         return new BinaryExpression($left, Operation::GT, $right);
     }
 
-    public static function gte(string|ExpressionInterface $left, int|float|bool|string|array|null|RefField $right): BinaryExpression
+    public static function gte(string|Field $left, int|float|bool|string|array|null|RefField $right): BinaryExpression
     {
         return new BinaryExpression($left, Operation::GTE, $right);
     }
 
-    public static function lt(string|ExpressionInterface $left, int|float|bool|string|array|null|RefField $right): BinaryExpression
+    public static function lt(string|Field $left, int|float|bool|string|array|null|RefField $right): BinaryExpression
     {
         return new BinaryExpression($left, Operation::LT, $right);
     }
 
-    public static function lte(string|ExpressionInterface $left, int|float|bool|string|array|null|RefField $right): BinaryExpression
+    public static function lte(string|Field $left, int|float|bool|string|array|null|RefField $right): BinaryExpression
     {
         return new BinaryExpression($left, Operation::LTE, $right);
     }
 
-    public static function in(string|ExpressionInterface $left, array $right): BinaryExpression
+    public static function in(string|Field $left, array|RefField $right): BinaryExpression
     {
         return new BinaryExpression($left, Operation::IN, $right);
     }
 
-    public static function notIn(string|ExpressionInterface $left, array $right): BinaryExpression
+    public static function notIn(string|Field $left, array|RefField $right): BinaryExpression
     {
         return new BinaryExpression($left, Operation::NOT_IN, $right);
     }

@@ -53,6 +53,11 @@ class Utils
             throw new \InvalidArgumentException(sprintf('Invalid express definition: %s', json_encode($expression)));
         }
 
+        // parse right value as RefField
+        if (is_array($expression[2]) && array_key_exists('ref', $expression[2]) && is_string($expression[2]['ref'])) {
+            return new BinaryExpression($expression[0], $expression[1], new RefField($expression[2]['ref']));
+        }
+
         return new BinaryExpression($expression[0], $expression[1], $expression[2]);
     }
 
@@ -91,10 +96,7 @@ class Utils
     public static function valueToString($value): string
     {
         return match (gettype($value)) {
-            'string' => sprintf('"%s"', $value),
             'boolean' => $value ? 'true' : 'false',
-            'integer' => (string) $value,
-            'double' => (string) $value,
             'NULL' => 'null',
             default => json_encode($value),
         };

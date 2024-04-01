@@ -24,8 +24,8 @@ enum Operation: string
             self::GTE => $leftValue >= $rightValue,
             self::LT => $leftValue < $rightValue,
             self::LTE => $leftValue <= $rightValue,
-            self::IN => in_array($leftValue, $rightValue, true),
-            self::NIN, self::NOT_IN => ! in_array($leftValue, $rightValue, true),
+            self::IN => in_array($leftValue, (array) $rightValue, true),
+            self::NIN, self::NOT_IN => ! in_array($leftValue, (array) $rightValue, true),
         };
     }
 

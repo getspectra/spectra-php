@@ -8,6 +8,7 @@ use Overtrue\Spectra\Expressions\Factory;
 use Overtrue\Spectra\Expressions\NotExpression;
 use Overtrue\Spectra\Expressions\OrExpression;
 use Overtrue\Spectra\Operation;
+use Overtrue\Spectra\RefField;
 use PHPUnit\Framework\TestCase;
 
 class FactoryTest extends TestCase
@@ -129,11 +130,12 @@ class FactoryTest extends TestCase
             'and' => [
                 ['user.id', '=', 1],
                 ['team.id', '=', 1],
+                ['file.team_id', '=', ['ref' => 'team.id']],
             ],
         ]));
 
         $this->assertInstanceOf(AndExpression::class, $expression);
-        $this->assertCount(2, $expression->expressions);
+        $this->assertCount(3, $expression->expressions);
         $this->assertInstanceOf(BinaryExpression::class, $expression->expressions[0]);
         $this->assertInstanceOf(BinaryExpression::class, $expression->expressions[1]);
         $this->assertSame('user.id', $expression->expressions[0]->left->name);
@@ -142,6 +144,12 @@ class FactoryTest extends TestCase
         $this->assertSame('team.id', $expression->expressions[1]->left->name);
         $this->assertSame('=', $expression->expressions[1]->operation);
         $this->assertSame(1, $expression->expressions[1]->right);
+
+        $this->assertInstanceOf(BinaryExpression::class, $expression->expressions[2]);
+        $this->assertSame('file.team_id', $expression->expressions[2]->left->name);
+        $this->assertSame('=', $expression->expressions[2]->operation);
+        $this->assertInstanceOf(RefField::class, $expression->expressions[2]->right);
+        $this->assertSame('team.id', $expression->expressions[2]->right->name);
     }
 
     public function testParseOrExpression()
