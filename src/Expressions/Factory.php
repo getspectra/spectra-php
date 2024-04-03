@@ -9,7 +9,7 @@ use Overtrue\Spectra\Utils;
 
 class Factory
 {
-    public static function make(string|Field $left, string|Operation $operation, int|float|bool|string|array|null|RefField $right): BinaryExpression
+    public static function make(string $left, string|Operation $operation, int|float|bool|string|array|null|RefField $right): BinaryExpression
     {
         return new BinaryExpression($left, $operation, $right);
     }

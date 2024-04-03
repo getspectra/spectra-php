@@ -11,7 +11,7 @@ use Overtrue\Spectra\Expressions\OrExpression;
 use Overtrue\Spectra\RefField;
 use Overtrue\Spectra\Utils;
 
-class ExpressDebugger
+class ExpressionDebugger
 {
     public static function debug(ExpressionInterface $expression, array $data): array
     {

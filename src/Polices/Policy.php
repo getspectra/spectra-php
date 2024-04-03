@@ -30,12 +30,12 @@ class Policy implements \JsonSerializable, \Stringable, PolicyInterface
             }
         }
 
-        if (empty($definition['apply_filter'])) {
-            throw new \InvalidArgumentException('Missing apply_filter');
+        if (empty($definition['filter'])) {
+            throw new \InvalidArgumentException('Missing filter');
         }
 
         $effect = Effect::from(strtolower($definition['effect']));
-        $expression = ExpressionFactory::parse($definition['apply_filter']);
+        $expression = ExpressionFactory::parse($definition['filter']);
 
         return new self($expression, $effect, $definition['permissions'] ?? [], $definition['description'] ?? '');
     }
@@ -47,7 +47,7 @@ class Policy implements \JsonSerializable, \Stringable, PolicyInterface
 
     public function getFields(): array
     {
-        return $this->getApplyFilter()->getFields();
+        return $this->getFilter()->getFields();
     }
 
     public function getPermissions(): array
@@ -64,14 +64,14 @@ class Policy implements \JsonSerializable, \Stringable, PolicyInterface
         return $this->effect ?? Effect::ALLOW;
     }
 
-    public function getApplyFilter(): ExpressionInterface
+    public function getFilter(): ExpressionInterface
     {
         return $this->expression;
     }
 
     public function apply(array $data): bool
     {
-        return $this->getApplyFilter()->evaluate($data);
+        return $this->getFilter()->evaluate($data);
     }
 
     public function jsonSerialize(): array
@@ -80,8 +80,7 @@ class Policy implements \JsonSerializable, \Stringable, PolicyInterface
             'description' => $this->getDescription(),
             'effect' => $this->getEffect()->value,
             'permissions' => $this->getPermissions(),
-            'apply_filter' => $this->getApplyFilter(),
-            'fields' => $this->getFields(),
+            'filter' => $this->getFilter(),
         ];
     }
 

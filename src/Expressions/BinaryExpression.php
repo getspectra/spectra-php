@@ -11,11 +11,11 @@ class BinaryExpression extends Expression
     public Field $left;
 
     public function __construct(
-        string|Field $left,
+        string $left,
         public string|Operation $operation,
         public int|float|bool|string|array|null|RefField $right
     ) {
-        $this->left = $left instanceof Field ? $left : new Field($left);
+        $this->left = new Field($left);
     }
 
     public function evaluate(array $data): bool

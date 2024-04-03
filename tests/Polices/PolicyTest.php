@@ -16,8 +16,7 @@ class PolicyTest extends TestCase
             'description' => 'test',
             'effect' => 'allow',
             'permissions' => ['EDIT_FILE'],
-            'apply_filter' => ['user.id', '=', 1],
-            'fields' => ['user.id'],
+            'filter' => ['user.id', '=', 1],
         ]), json_encode(new Policy(new BinaryExpression('user.id', '=', 1), 'ALLOW', ['EDIT_FILE'], 'test')));
     }
 
@@ -27,15 +26,14 @@ class PolicyTest extends TestCase
             'description' => 'test',
             'effect' => 'allow',
             'permissions' => ['EDIT_FILE'],
-            'apply_filter' => ['user.id', '=', 1],
-            'fields' => ['user.id'],
+            'filter' => ['user.id', '=', 1],
         ]));
 
         $this->assertSame('test', $policy->getDescription());
         $this->assertSame('allow', $policy->getEffect()->value);
         $this->assertSame(['EDIT_FILE'], $policy->getPermissions());
         $this->assertSame(['user.id'], $policy->getFields());
-        $this->assertInstanceOf(BinaryExpression::class, $policy->getApplyFilter());
+        $this->assertInstanceOf(BinaryExpression::class, $policy->getFilter());
     }
 
     public function testApply()

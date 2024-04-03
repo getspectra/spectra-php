@@ -9,7 +9,7 @@ interface PolicyInterface
 {
     public function getDescription(): string;
 
-    public function getApplyFilter(): ExpressionInterface;
+    public function getFilter(): ExpressionInterface;
 
     /**
      * @return array<string>

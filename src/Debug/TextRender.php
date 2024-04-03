@@ -2,7 +2,7 @@
 
 namespace Overtrue\Spectra\Debug;
 
-use Overtrue\Spectra\Ref;
+use Overtrue\Spectra\RefField;
 use Overtrue\Spectra\Utils;
 
 class TextRender implements RenderInterface
@@ -51,7 +51,7 @@ class TextRender implements RenderInterface
                 $fieldValue = Utils::arrayGet($data, $item['expression']['field']);
                 $value = $item['expression']['value'];
 
-                if ($value instanceof Ref) {
+                if ($value instanceof RefField) {
                     $value = sprintf('%s:%s', $value, Utils::valueToString($value->evaluate($data)));
                 } else {
                     $value = Utils::valueToString($value);

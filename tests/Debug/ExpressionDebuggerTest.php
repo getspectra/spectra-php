@@ -2,19 +2,19 @@
 
 namespace Overtrue\Spectra\Tests\Debug;
 
-use Overtrue\Spectra\Debug\ExpressDebugger;
+use Overtrue\Spectra\Debug\ExpressionDebugger;
 use Overtrue\Spectra\Expressions\BinaryExpression;
 use Overtrue\Spectra\Expressions\Factory;
 use Overtrue\Spectra\RefField;
 use PHPUnit\Framework\TestCase;
 
-class ExpressDebuggerTest extends TestCase
+class ExpressionDebuggerTest extends TestCase
 {
     public function testDebugWithBinaryExpression()
     {
         $expression = new BinaryExpression('user.id', '=', 1);
         $data = ['user.id' => 2];
-        $report = ExpressDebugger::debug($expression, $data);
+        $report = ExpressionDebugger::debug($expression, $data);
 
         $this->assertSame([
             'name' => 'Binary',
@@ -32,7 +32,7 @@ class ExpressDebuggerTest extends TestCase
         $refValue = new RefField('team.creator_id');
         $expression = new BinaryExpression('user.id', '=', $refValue);
         $data = ['user.id' => 2, 'team.creator_id' => 1];
-        $report = ExpressDebugger::debug($expression, $data);
+        $report = ExpressionDebugger::debug($expression, $data);
 
         $this->assertSame([
             'name' => 'Binary',
@@ -53,7 +53,7 @@ class ExpressDebuggerTest extends TestCase
         ]);
 
         $data = ['user.id' => 2, 'user.name' => 'overtrue'];
-        $report = ExpressDebugger::debug($expression, $data);
+        $report = ExpressionDebugger::debug($expression, $data);
 
         $this->assertSame([
             'name' => 'And',
@@ -88,7 +88,7 @@ class ExpressDebuggerTest extends TestCase
             new BinaryExpression('user.name', '=', 'overtrue'),
         ]);
         $data = ['user.id' => 2, 'user.name' => 'overtrue'];
-        $report = ExpressDebugger::debug($expression, $data);
+        $report = ExpressionDebugger::debug($expression, $data);
 
         $this->assertSame([
             'name' => 'Or',
@@ -124,7 +124,7 @@ class ExpressDebuggerTest extends TestCase
         ));
 
         $data = ['user.id' => 2];
-        $report = ExpressDebugger::debug($expression, $data);
+        $report = ExpressionDebugger::debug($expression, $data);
 
         $this->assertSame([
             'name' => 'Not',

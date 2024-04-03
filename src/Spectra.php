@@ -2,13 +2,14 @@
 
 namespace Overtrue\Spectra;
 
+use Closure;
 use Overtrue\Spectra\DataLoaders\DataLoaderInterface;
-use Overtrue\Spectra\Debug\ExpressDebugger;
+use Overtrue\Spectra\Debug\ExpressionDebugger;
 use Overtrue\Spectra\Polices\PolicyInterface;
 
 class Spectra
 {
-    public static function validate(array $polices, DataLoaderInterface $dataLoader, string $permissionName): bool
+    public static function validate(array $polices, DataLoaderInterface|Closure $dataLoader, string $permissionName): bool
     {
         // Find all relevant policies
         $relevantPolices = self::getRelevantPolices($polices, $permissionName);
@@ -17,7 +18,7 @@ class Spectra
         $fieldsToLoad = self::getRequiredFieldsFromPolicies($relevantPolices);
 
         // Load all necessary data
-        $data = $dataLoader->load($fieldsToLoad);
+        $data = self::loadAllNecessaryData($dataLoader, $fieldsToLoad);
 
         // Bisect policies into DENY and ALLOW policies
         [$denyPolicies, $allowPolicies] = self::bisectPoliciesIntoDenyAndAllowPolicies($relevantPolices);
@@ -41,7 +42,7 @@ class Spectra
         return false;
     }
 
-    public static function debug(array $polices, DataLoaderInterface $dataLoader, string $permissionName): array
+    public static function debug(array $polices, DataLoaderInterface|Closure $dataLoader, string $permissionName): array
     {
         $report = [
             'policies' => [],
@@ -70,7 +71,7 @@ class Spectra
         $report['fields'] = $fieldsToLoad = self::getRequiredFieldsFromPolicies($relevantPolices);
 
         // Load all necessary data
-        $report['data'] = $data = $dataLoader->load($fieldsToLoad);
+        $data = self::loadAllNecessaryData($dataLoader, $fieldsToLoad);
 
         // Bisect policies into DENY and ALLOW policies
         [$denyPolicies, $allowPolicies] = self::bisectPoliciesIntoDenyAndAllowPolicies($relevantPolices);
@@ -79,7 +80,7 @@ class Spectra
         foreach ($denyPolicies as $denyPolicy) {
             $report['policies'][spl_object_id($denyPolicy)]['applied'] = true;
             $report['policies'][spl_object_id($denyPolicy)]['matched'] = $matched = $denyPolicy->apply($data);
-            $report['policies'][spl_object_id($denyPolicy)]['expression'] = ExpressDebugger::debug($denyPolicy->getApplyFilter(), $data);
+            $report['policies'][spl_object_id($denyPolicy)]['filter'] = ExpressionDebugger::debug($denyPolicy->getFilter(), $data);
 
             if ($matched) {
                 return $report;
@@ -90,7 +91,7 @@ class Spectra
         foreach ($allowPolicies as $allowPolicy) {
             $report['policies'][spl_object_id($allowPolicy)]['applied'] = true;
             $report['policies'][spl_object_id($allowPolicy)]['matched'] = $matched = $allowPolicy->apply($data);
-            $report['policies'][spl_object_id($allowPolicy)]['expression'] = ExpressDebugger::debug($allowPolicy->getApplyFilter(), $data);
+            $report['policies'][spl_object_id($allowPolicy)]['filter'] = ExpressionDebugger::debug($allowPolicy->getFilter(), $data);
 
             if ($matched) {
                 return $report;
@@ -149,5 +150,19 @@ class Spectra
         }
 
         return [$denyPolicies, $allowPolicies];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function loadAllNecessaryData(DataLoaderInterface|Closure $dataLoader, array $fieldsToLoad): mixed
+    {
+        $data = $dataLoader instanceof Closure ? $dataLoader($fieldsToLoad) : $dataLoader->load($fieldsToLoad);
+
+        if (! is_array($data) || array_is_list($data)) {
+            throw new \InvalidArgumentException('Data must be an associative array.');
+        }
+
+        return $data;
     }
 }
