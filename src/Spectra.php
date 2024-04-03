@@ -45,22 +45,21 @@ class Spectra
     public static function debug(array $polices, DataLoaderInterface|Closure $dataLoader, string $permissionName): array
     {
         $report = [
-            'policies' => [],
             'permission' => $permissionName,
+            'policies' => [],
         ];
 
         foreach ($polices as $police) {
             assert($police instanceof PolicyInterface);
 
             $report['policies'][spl_object_id($police)] = [
-                'class' => get_class($police),
                 'description' => $police->getDescription(),
-                'effect' => $police->getEffect(),
+                'effect' => $police->getEffect()->value,
                 'permissions' => $police->getPermissions(),
                 'fields' => $police->getFields(),
                 'applied' => false,
                 'matched' => false,
-                'expression' => null,
+                'filter' => null,
             ];
         }
 
@@ -71,7 +70,7 @@ class Spectra
         $report['fields'] = $fieldsToLoad = self::getRequiredFieldsFromPolicies($relevantPolices);
 
         // Load all necessary data
-        $data = self::loadAllNecessaryData($dataLoader, $fieldsToLoad);
+        $report['data'] = $data = self::loadAllNecessaryData($dataLoader, $fieldsToLoad);
 
         // Bisect policies into DENY and ALLOW policies
         [$denyPolicies, $allowPolicies] = self::bisectPoliciesIntoDenyAndAllowPolicies($relevantPolices);
@@ -83,7 +82,7 @@ class Spectra
             $report['policies'][spl_object_id($denyPolicy)]['filter'] = ExpressionDebugger::debug($denyPolicy->getFilter(), $data);
 
             if ($matched) {
-                return $report;
+                return self::formatDebugReport($report);
             }
         }
 
@@ -94,11 +93,11 @@ class Spectra
             $report['policies'][spl_object_id($allowPolicy)]['filter'] = ExpressionDebugger::debug($allowPolicy->getFilter(), $data);
 
             if ($matched) {
-                return $report;
+                return self::formatDebugReport($report);
             }
         }
 
-        return $report;
+        return self::formatDebugReport($report);
     }
 
     /**
@@ -164,5 +163,12 @@ class Spectra
         }
 
         return $data;
+    }
+
+    protected static function formatDebugReport(array $report): array
+    {
+        $report['policies'] = array_values($report['policies'] ?? []);
+
+        return $report;
     }
 }

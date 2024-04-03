@@ -32,14 +32,55 @@ class SpectraTest extends TestCase
     {
         $polices = [new Policy(Factory::and([['user.id', '=', 1], ['team.id', '=', 1]]), 'allow', ['EDIT_FILE'], 'User 1 can edit file.')];
 
-        $loader = new ArrayDataLoader([
+        $data = [
             'user.id' => 1,
-            'user.team_id' => 1,
+            'team.id' => 1,
             'team.status' => 'active',
-        ]);
+        ];
+        $loader = new ArrayDataLoader($data);
 
         $permissionName = 'EDIT_FILE';
 
         $report = Spectra::debug($polices, $loader, $permissionName);
+
+        $this->assertSame([
+            'permission' => 'EDIT_FILE',
+            'policies' => [
+                [
+                    'description' => 'User 1 can edit file.',
+                    'effect' => 'allow',
+                    'permissions' => ['EDIT_FILE'],
+                    'fields' => ['user.id', 'team.id'],
+                    'applied' => true,
+                    'matched' => true,
+                    'filter' => [
+                        'name' => 'And',
+                        'value' => true,
+                        'expressions' => [
+                            [
+                                'name' => 'Binary',
+                                'value' => true,
+                                'expression' => [
+                                    'operation' => '=',
+                                    'left' => ['name' => 'user.id', 'value' => 1],
+                                    'right' => ['name' => null, 'value' => 1],
+                                ],
+                            ],
+                            [
+                                'name' => 'Binary',
+                                'value' => true,
+                                'expression' => [
+                                    'operation' => '=',
+                                    'left' => ['name' => 'team.id', 'value' => 1],
+                                    'right' => ['name' => null, 'value' => 1],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'fields' => ['user.id', 'team.id'],
+            'data' => $data,
+        ], $report);
     }
 }
