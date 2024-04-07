@@ -12,7 +12,7 @@ class Spectra
     public static function validate(array $polices, DataLoaderInterface|Closure $dataLoader, string $permissionName): bool
     {
         // Find all relevant policies
-        $relevantPolices = self::getRelevantPolices($polices, $permissionName);
+        $relevantPolices = self::getRelevantPolicies($polices, $permissionName);
 
         // Parse all resources required from policies
         $fieldsToLoad = self::getRequiredFieldsFromPolicies($relevantPolices);
@@ -64,7 +64,7 @@ class Spectra
         }
 
         // Find all relevant policies
-        $relevantPolices = self::getRelevantPolices($polices, $permissionName);
+        $relevantPolices = self::getRelevantPolicies($polices, $permissionName);
 
         // Parse all resources required from policies
         $report['fields'] = $fieldsToLoad = self::getRequiredFieldsFromPolicies($relevantPolices);
@@ -103,7 +103,7 @@ class Spectra
     /**
      * @return array<\Overtrue\Spectra\Polices\PolicyInterface>
      */
-    public static function getRelevantPolices(array $polices, string $permissionName): array
+    public static function getRelevantPolicies(array $polices, string $permissionName): array
     {
         $relevantPolices = [];
 
