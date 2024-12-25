@@ -6,7 +6,7 @@
 ## Installing
 
 ```shell
-$ composer require overtrue/spectra -vvv
+composer require overtrue/spectra -vvv
 ```
 
 ## Usage
